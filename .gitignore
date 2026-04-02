@@ -4,3 +4,5 @@ __pycache__/
 *.pyc
 digest.html
 topics.txt
+user_data.json
+digest_*.html

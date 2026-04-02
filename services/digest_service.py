@@ -9,7 +9,7 @@ import logging
 from datetime import date
 
 from llm.client import LLMClient
-from services.topic_service import get_topics
+from services.topic_service import get_topics, mark_topics_processed
 
 logger = logging.getLogger(__name__)
 
@@ -19,21 +19,26 @@ class DigestService:
     def __init__(self, llm_client: LLMClient):
         self.llm = llm_client
 
-    def generate(self) -> str:
+    def generate(self, user_id: str) -> tuple[str, str]:
         """
         Full pipeline:
           1. Load topics
           2. Call LLM
           3. Wrap in a complete HTML document
-        Returns the HTML string.
+          4. Mark topics as processed
+        Returns a tuple of (HTML string, Title string).
         """
-        topics = get_topics()
-        logger.info(f"Generating digest for {len(topics)} topic(s)...")
+        topics = get_topics(user_id, limit=5)
+        logger.info(f"Generating digest for {len(topics)} topic(s) for user {user_id}...")
 
         body_html = self.llm.generate(topics)
+        
+        # Mark as processed only if generation succeeded without raising exception
+        mark_topics_processed(user_id, topics)
 
         today = date.today().strftime("%B %d, %Y")
-        title = f"Daily Learning Digest — {today}"
+        topics_str = ", ".join(topics).title()
+        title = f"Digest: {topics_str[:40]}" + ("..." if len(topics_str)>40 else "") + f" ({today})"
 
         html = f"""<!DOCTYPE html>
 <html lang="en">
@@ -51,4 +56,4 @@ class DigestService:
 </html>"""
 
         logger.info("Digest HTML assembled.")
-        return html
+        return html, title

@@ -7,16 +7,17 @@ Uses Python's built-in smtplib.
 
 import os
 import smtplib
+import time
 import logging
 from email.message import EmailMessage
 
 logger = logging.getLogger(__name__)
 
-def send_to_kindle(html_filepath: str, date_str: str):
+def send_to_kindle(html_filepath: str, date_str: str, title: str, to_email: str = None):
     """
     Sends the HTML file to the configured Kindle email address.
     """
-    kindle_email = os.getenv("KINDLE_EMAIL")
+    kindle_email = to_email or os.getenv("KINDLE_EMAIL")
     smtp_user = os.getenv("SMTP_USER")
     smtp_password = os.getenv("SMTP_PASSWORD")
     smtp_server = os.getenv("SMTP_SERVER", "smtp.gmail.com")
@@ -25,14 +26,14 @@ def send_to_kindle(html_filepath: str, date_str: str):
     if not all([kindle_email, smtp_user, smtp_password]):
         logger.warning(
             "Email config missing. Skipping Kindle delivery. "
-            "Set KINDLE_EMAIL, SMTP_USER, and SMTP_PASSWORD in .env"
+            "Ensure KINDLE_EMAIL, SMTP_USER, and SMTP_PASSWORD are set."
         )
         return
 
     logger.info(f"Preparing to send digest to Kindle: {kindle_email}")
 
     msg = EmailMessage()
-    msg["Subject"] = f"Daily Learning Digest - {date_str}"
+    msg["Subject"] = title
     msg["From"] = smtp_user
     msg["To"] = kindle_email
     
@@ -48,7 +49,7 @@ def send_to_kindle(html_filepath: str, date_str: str):
             file_data,
             maintype="text",
             subtype="html",
-            filename=f"Daily_Digest_{date_str.replace(' ', '_').replace(',', '')}.html"
+            filename=f"Daily_Digest_{date_str.replace(' ', '_').replace(',', '')}_{int(time.time())}.html"
         )
     except Exception as e:
         logger.error(f"Failed to read digest file for attachment: {e}")

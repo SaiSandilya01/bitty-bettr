@@ -94,7 +94,42 @@ The engine will read your queued topics, orchestrate the LLM deep-dives, generat
 
 ---
 
-## 🤝 Next Steps / Expansion Features (Phase 6)
-- [ ] Connect a Telegram Bot to `topics.txt` so you can text ideas to your queue from your phone.
+## 📱 Telegram Bot
+
+Queue topics and trigger digest generation directly from your phone — no curl commands needed.
+
+### Setup
+
+1. **Create a bot** via [@BotFather](https://t.me/botfather) on Telegram and copy the token.
+2. **Add the token** to your `.env`:
+   ```
+   TELEGRAM_BOT_TOKEN=your-telegram-bot-token-here
+   ```
+3. **Install the dependency** (if not already done):
+   ```bash
+   pip install -r requirements.txt
+   ```
+4. **Run the bot** (in a separate terminal from the API server):
+   ```bash
+   source .venv/bin/activate
+   python -m telegram_bot.bot
+   ```
+
+### Commands
+
+| Command | Description |
+|---|---|
+| `/start` | Welcome message & command list |
+| `/add <topic>` | Add a topic to the queue |
+| `/list` | Show all queued topics |
+| `/clear` | Remove all queued topics |
+| `/digest` | Generate the digest and email it to your Kindle |
+
+> **Tip:** The bot and FastAPI server share the same `topics.txt` file, so you can mix-and-match — add topics via the API and send the digest via Telegram, or vice versa.
+
+---
+
+## 🤝 Next Steps / Expansion Features
+- [x] Connect a Telegram Bot to `topics.txt` so you can text ideas to your queue from your phone.
 - [ ] Setup a strictly scheduled crontab daemon to fully automate generation at 7:00 AM.
-- [ ] Add EPUB native conversion using `ebooklib` for complex embedded images. 
+- [ ] Add EPUB native conversion using `ebooklib` for complex embedded images.
